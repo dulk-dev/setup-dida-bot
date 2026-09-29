@@ -6,17 +6,17 @@
 
 微信转发到滴答清单时，一条消息常被拆成多条任务：有正文的上下文，以及标题里带 `@bot`、正文为空的碎片。需要把这些空正文碎片并回上下文任务，用生命周期标签 `todo` → `doing` → `done` 认领，再 webhook 唤醒 Grok Bot。
 
-本仓库是跑在本机的 Node daemon：轮询滴答 Open API，完成合并和认领，并向 Grok Bot 例程「setup-dida-bot webhook」发唤醒。URL 和密钥只留在本机。
+本仓库是跑在本机的 Node daemon：通过 dida CLI 完成合并和认领，并向 Grok Bot 例程「setup-dida-bot webhook」发唤醒。URL 和密钥只留在本机。
 
 ## 当前方案
 
-守护进程按间隔轮询滴答 Open API。访问令牌不写在本仓库里，而是读取本机 [dida-cli](#dida-cli) 已经登录好的 `access_token`。
+守护进程按间隔调用本机的 [dida CLI](#dida-cli)（`dida … --json`）。登录态由 CLI 自己保管，本进程不读取 token，也不直接请求滴答 HTTP 接口。
 
 每一轮大致是：
 
 ```mermaid
 flowchart LR
-  poll["轮询 Open API"] --> merge["合并空正文 @bot 碎片"]
+  poll["dida CLI 轮询"] --> merge["合并空正文 @bot 碎片"]
   merge --> claim["todo 认领为 doing"]
   claim --> hook["POST setup-dida-bot webhook"]
   hook --> bot["Grok Bot 写回并把叶子改为 done"]
@@ -45,9 +45,9 @@ flowchart LR
 
 需要 Node.js 20+。下面的命令都在**克隆后的项目根目录**执行（含 `package.json` 的那一层）。
 
-### dida-cli
+### dida CLI
 
-本仓库只读 token，不捆绑 CLI。请单独安装滴答官方分发的 dida-cli，再登录。与默认 `tokenPath`（`~/.config/dida-cli/config.json` 的 `access_token`）对齐的是 npm 包 [`@suibiji/dida-cli`](https://www.npmjs.com/package/@suibiji/dida-cli)。滴答帮助中心的安装说明：<https://help.dida365.com/articles/7464976698707017728>。
+本仓库通过 `dida` 命令读写任务和标签，不捆绑 CLI。请单独安装滴答官方分发的 npm 包 [`@suibiji/dida-cli`](https://www.npmjs.com/package/@suibiji/dida-cli)，再登录。滴答帮助中心的安装说明：<https://help.dida365.com/articles/7464976698707017728>。
 
 该 npm 包没有公开的 GitHub 仓库字段，这里不链任何 `github.com/.../dida-cli` 地址。
 
@@ -56,7 +56,7 @@ npm install -g @suibiji/dida-cli
 dida auth login
 ```
 
-`dida auth login` 把 `access_token` 写到 `~/.config/dida-cli/config.json`。脚本加载 token 时只在日志里打印前后各 4 个字符的预览。
+默认 `didaBinary` 是 PATH 上的 `dida`。命令不在 PATH 上时，把 `config.json` 的 `didaBinary` 写成可执行文件路径。未安装或未登录时，进程会报错并提示 `dida auth login`。
 
 ### 安装与跑起来
 
@@ -77,7 +77,7 @@ npm run status    # 打印最近一次 data/status.json
 npm run ui        # http://127.0.0.1:8788/ 可改 interval / enabled
 ```
 
-`npm run selftest` 会用真实 Open API 建一对标题前缀为 `[setup-dida-bot-test]` 的收件箱任务，打到本机 mock webhook，然后清理。需要本机已经 `dida auth login`。
+`npm run selftest` 会用已登录的 `dida` CLI 建一对标题前缀为 `[setup-dida-bot-test]` 的收件箱任务，打到本机 mock webhook，然后清理。需要本机已经 `dida auth login`。
 
 ## 配置参考
 
@@ -87,8 +87,7 @@ npm run ui        # http://127.0.0.1:8788/ 可改 interval / enabled
 |------|----------|------|
 | `enabled` | `true` | `false` 时 daemon 跳过本轮 |
 | `intervalSeconds` | `120` | 轮询间隔（秒）。代码下限为 15 |
-| `apiBase` | `https://api.dida365.com/open/v1` | 滴答 Open API 根路径 |
-| `tokenPath` | `~/.config/dida-cli/config.json` | 读取其中的 `access_token` |
+| `didaBinary` | `dida` | `dida` 可执行文件。默认走 PATH |
 | `botMarker` | `@bot` | 空正文碎片的标题标记 |
 | `notMarker` | `@not` | 同一窗口命中多条上下文时，把碎片标记改写成这个，并打冻结标签 |
 | `wechatCaptureTag` | `微信采集` | 依赖匹配用的来源标签 |

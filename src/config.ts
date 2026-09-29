@@ -21,8 +21,8 @@ export type WebhookAuthStyle = "bearer" | "header" | "both";
 export interface AppConfig {
   enabled: boolean;
   intervalSeconds: number;
-  apiBase: string;
-  tokenPath: string;
+  /** `dida` on PATH, or an absolute path to the binary. */
+  didaBinary: string;
   webhookUrl: string;
   webhookSecret: string;
   webhookAuthStyle: WebhookAuthStyle;
@@ -41,8 +41,7 @@ export interface AppConfig {
 export interface RawConfig extends Partial<MarkersConfig> {
   enabled?: boolean;
   intervalSeconds?: number;
-  apiBase?: string;
-  tokenPath?: string;
+  didaBinary?: string;
   webhookUrl?: string;
   webhookSecret?: string;
   webhookAuthStyle?: string;
@@ -115,13 +114,7 @@ export function loadConfig(configPath?: string): AppConfig {
   return {
     enabled: raw.enabled !== false,
     intervalSeconds: Math.max(15, Number(raw.intervalSeconds) || 120),
-    apiBase: (raw.apiBase ?? "https://api.dida365.com/open/v1").replace(
-      /\/$/,
-      "",
-    ),
-    tokenPath: expandHome(
-      raw.tokenPath ?? "~/.config/dida-cli/config.json",
-    ),
+    didaBinary: expandHome((raw.didaBinary ?? "dida").trim() || "dida"),
     webhookUrl: (raw.webhookUrl ?? "").trim(),
     webhookSecret: raw.webhookSecret ?? "",
     webhookAuthStyle: parseAuthStyle(raw.webhookAuthStyle),
@@ -135,36 +128,6 @@ export function loadConfig(configPath?: string): AppConfig {
     configPath: path,
     projectRoot: PROJECT_ROOT,
   };
-}
-
-export interface TokenFile {
-  access_token?: string;
-  refresh_token?: string;
-  expires_at?: string;
-  [key: string]: unknown;
-}
-
-/** Load Open API access_token. Never log the full token. */
-export function loadAccessToken(tokenPath: string): string {
-  const path = expandHome(tokenPath);
-  if (!existsSync(path)) {
-    throw new Error(
-      `Missing Dida token file at ${path}. Run: dida auth login`,
-    );
-  }
-  const data = JSON.parse(readFileSync(path, "utf8")) as TokenFile;
-  const token = data.access_token?.trim();
-  if (!token) {
-    throw new Error(
-      `No access_token in ${path}. Run: dida auth login`,
-    );
-  }
-  return token;
-}
-
-export function tokenPreview(token: string): string {
-  if (token.length <= 8) return "***";
-  return `${token.slice(0, 4)}…${token.slice(-4)}`;
 }
 
 export function saveRawConfigPatch(

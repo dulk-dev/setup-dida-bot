@@ -1,3 +1,5 @@
+import { execFile } from "node:child_process";
+
 export interface DidaTask {
   id: string;
   projectId: string;
@@ -182,48 +184,145 @@ export function normalizeSearchTasks(payload: unknown): DidaTask[] {
   return extractTaskArray(payload);
 }
 
-export class DidaClient implements DidaApi {
-  constructor(
-    private readonly accessToken: string,
-    private readonly apiBase: string,
-  ) {}
+export interface CliRunResult {
+  stdout: string;
+  stderr: string;
+  code: number;
+}
 
-  private async request(
-    method: string,
-    path: string,
-    body?: unknown,
-  ): Promise<unknown> {
-    const headers: Record<string, string> = {
-      Authorization: `Bearer ${this.accessToken}`,
-    };
-    let payload: string | undefined;
-    if (body !== undefined) {
-      headers["Content-Type"] = "application/json";
-      payload = JSON.stringify(body);
+/** Injected in tests. Production uses `execFile` with no shell. */
+export type CliRunner = (
+  binary: string,
+  args: string[],
+) => Promise<CliRunResult>;
+
+export interface DidaCliOptions {
+  /** Executable name or path. Default `dida` on PATH. */
+  binary?: string;
+  run?: CliRunner;
+}
+
+const CLI_MAX_BUFFER = 20 * 1024 * 1024;
+
+export function execFileCliRunner(
+  binary: string,
+  args: string[],
+): Promise<CliRunResult> {
+  return new Promise((resolve, reject) => {
+    execFile(
+      binary,
+      args,
+      {
+        maxBuffer: CLI_MAX_BUFFER,
+        timeout: 60_000,
+        windowsHide: true,
+        encoding: "utf8",
+      },
+      (error, stdout, stderr) => {
+        const errno = error as NodeJS.ErrnoException | null;
+        if (errno && errno.code === "ENOENT") {
+          reject(
+            new DidaApiError(
+              127,
+              `找不到 dida 命令「${binary}」。请安装 @suibiji/dida-cli，并执行 dida auth login`,
+            ),
+          );
+          return;
+        }
+        const code =
+          errno && typeof errno.code === "number"
+            ? errno.code
+            : errno
+              ? 1
+              : 0;
+        resolve({
+          stdout: stdout ?? "",
+          stderr: stderr ?? "",
+          code,
+        });
+      },
+    );
+  });
+}
+
+function redactSecrets(text: string): string {
+  return text
+    .replace(/Bearer\s+\S+/gi, "Bearer ***")
+    .replace(/((?:access_token|refresh_token|webhookSecret)"?\s*[:=]\s*"?)[^\s",}]+/gi, "$1***")
+    .slice(0, 300);
+}
+
+function parseCliStatus(stderr: string): number | null {
+  const match = stderr.match(/DIDA API 错误\s+(\d+)/);
+  if (!match) return null;
+  const status = Number(match[1]);
+  return Number.isFinite(status) ? status : null;
+}
+
+function isAuthFailure(stderr: string): boolean {
+  return /未找到 access token|dida auth login/i.test(stderr);
+}
+
+function assertNoComma(values: readonly string[], label: string): void {
+  if (values.some((value) => value.includes(","))) {
+    throw new DidaApiError(400, `${label} 不能包含逗号`);
+  }
+}
+
+function flag(name: string, value: string): string {
+  return `--${name}=${value}`;
+}
+
+/**
+ * Dida reads and writes go through the `dida` CLI (`--json`), not a direct HTTP client.
+ */
+export class DidaCliClient implements DidaApi {
+  private readonly binary: string;
+  private readonly run: CliRunner;
+
+  constructor(options: DidaCliOptions = {}) {
+    const binary = options.binary?.trim() || "dida";
+    this.binary = binary;
+    this.run = options.run ?? execFileCliRunner;
+  }
+
+  private async invoke(args: string[]): Promise<unknown> {
+    let result: CliRunResult;
+    try {
+      result = await this.run(this.binary, args);
+    } catch (error) {
+      if (error instanceof DidaApiError) throw error;
+      const message = error instanceof Error ? error.message : "dida cli failed";
+      throw new DidaApiError(127, redactSecrets(message));
     }
-    const response = await fetch(`${this.apiBase}${path}`, {
-      method,
-      headers,
-      body: payload,
-    });
-    const text = await response.text();
-    if (!response.ok) {
-      throw new DidaApiError(response.status, text);
+
+    if (result.code !== 0) {
+      const stderr = result.stderr || result.stdout || "";
+      if (isAuthFailure(stderr)) {
+        throw new DidaApiError(401, "dida 未登录。请先运行 dida auth login");
+      }
+      const status = parseCliStatus(stderr) ?? 1;
+      throw new DidaApiError(status, redactSecrets(stderr || `dida exit ${result.code}`));
     }
+
+    const text = result.stdout.trim();
     if (text.length === 0) return null;
     try {
       return JSON.parse(text) as unknown;
     } catch {
-      throw new DidaApiError(response.status, "invalid JSON");
+      throw new DidaApiError(1, "dida 输出不是 JSON");
     }
   }
 
   async searchUnfinished(keywords: string): Promise<DidaTask[]> {
     try {
-      const payload = await this.request("POST", "/task/search", {
+      const payload = await this.invoke([
+        "task",
+        "search",
+        "--status=0",
+        "--json",
         keywords,
-        status: [0],
-      });
+      ]);
       return normalizeSearchTasks(payload);
     } catch (error) {
       if (error instanceof DidaApiError && error.status >= 500) {
@@ -240,15 +339,23 @@ export class DidaClient implements DidaApi {
   }
 
   async listInbox(): Promise<DidaTask[]> {
-    const payload = await this.request("GET", "/project/inbox/data");
+    const payload = await this.invoke([
+      "project",
+      "data",
+      "inbox",
+      "--json",
+    ]);
     return normalizeInboxTasks(payload);
   }
 
   async getTask(projectId: string, taskId: string): Promise<DidaTask> {
-    const payload = await this.request(
-      "GET",
-      `/project/${encodeURIComponent(projectId)}/task/${encodeURIComponent(taskId)}`,
-    );
+    const payload = await this.invoke([
+      "task",
+      "get",
+      projectId,
+      taskId,
+      "--json",
+    ]);
     const task = asTask(payload);
     if (!task) {
       throw new DidaApiError(500, "task detail missing id");
@@ -261,11 +368,21 @@ export class DidaClient implements DidaApi {
     projectId: string,
     fields: TaskUpdateFields,
   ): Promise<void> {
-    await this.request("POST", `/task/${encodeURIComponent(taskId)}`, {
-      id: taskId,
-      projectId,
-      ...fields,
-    });
+    const args = [
+      "task",
+      "update",
+      taskId,
+      flag("id", taskId),
+      flag("project", projectId),
+      "--json",
+    ];
+    if (fields.title !== undefined) args.push(flag("title", fields.title));
+    if (fields.content !== undefined) args.push(flag("content", fields.content));
+    if (fields.tags !== undefined) {
+      assertNoComma(fields.tags, "tags");
+      args.push(flag("tags", fields.tags.join(",")));
+    }
+    await this.invoke(args);
   }
 
   async updateTaskTags(
@@ -276,39 +393,56 @@ export class DidaClient implements DidaApi {
     await this.updateTask(taskId, projectId, { tags });
   }
 
-  /**
-   * Unfinished tasks with the given leaf tag names.
-   * Field must be `tag` (not `tags`).
-   */
+  /** Unfinished tasks carrying these leaf tag names. CLI flag is `--tag`. */
   async filterByTag(tags: string[]): Promise<DidaTask[]> {
-    const payload = await this.request("POST", "/task/filter", {
-      status: [0],
-      tag: tags,
-    });
+    assertNoComma(tags, "tag");
+    if (tags.length === 0) {
+      throw new DidaApiError(400, "filter tag 不能为空");
+    }
+    const payload = await this.invoke([
+      "task",
+      "filter",
+      "--json",
+      flag("tag", tags.join(",")),
+      "--status=0",
+    ]);
     return normalizeSearchTasks(payload);
   }
 
   async listTags(): Promise<DidaTag[]> {
-    const payload = await this.request("GET", "/tag");
+    const payload = await this.invoke(["tag", "list", "--json"]);
     return normalizeTags(payload);
   }
 
   async createTag(tag: CreateTagInput): Promise<void> {
-    const body: Record<string, string> = { name: tag.name };
-    if (tag.label) body.label = tag.label;
-    if (tag.parent) body.parent = tag.parent;
-    if (tag.color) body.color = tag.color;
-    await this.request("POST", "/tag", body);
+    const label = tag.label ?? tag.name;
+    const args = [
+      "tag",
+      "create",
+      flag("name", tag.name),
+      flag("label", label),
+      "--json",
+    ];
+    if (tag.parent) args.push(flag("parent", tag.parent));
+    if (tag.color) args.push(flag("color", tag.color));
+    await this.invoke(args);
   }
 
   async createTask(input: CreateTaskInput): Promise<DidaTask> {
-    const body: Record<string, unknown> = {
-      title: input.title,
-    };
-    if (input.content !== undefined) body.content = input.content;
-    if (input.projectId) body.projectId = input.projectId;
-    if (input.tags) body.tags = input.tags;
-    const payload = await this.request("POST", "/task", body);
+    const projectId = input.projectId?.trim() || "inbox";
+    const args = [
+      "task",
+      "create",
+      flag("title", input.title),
+      flag("project", projectId),
+      "--json",
+    ];
+    if (input.content !== undefined) args.push(flag("content", input.content));
+    if (input.tags) {
+      assertNoComma(input.tags, "tags");
+      args.push(flag("tags", input.tags.join(",")));
+    }
+    const payload = await this.invoke(args);
     const task = asTask(payload);
     if (!task) {
       throw new DidaApiError(500, "create task missing id");
@@ -317,9 +451,6 @@ export class DidaClient implements DidaApi {
   }
 
   async deleteTask(projectId: string, taskId: string): Promise<void> {
-    await this.request(
-      "DELETE",
-      `/project/${encodeURIComponent(projectId)}/task/${encodeURIComponent(taskId)}`,
-    );
+    await this.invoke(["task", "delete", projectId, taskId]);
   }
 }
