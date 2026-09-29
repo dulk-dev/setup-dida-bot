@@ -1,0 +1,23 @@
+{
+  "name": "setup-dida-bot",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Local Grok-Bot alternative to Cloudflare Worker dida-bot-merge",
+  "type": "module",
+  "scripts": {
+    "once": "tsx src/cli.ts once",
+    "daemon": "tsx src/cli.ts daemon",
+    "status": "tsx src/cli.ts status",
+    "ui": "tsx src/cli.ts ui",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "selftest": "tsx scripts/selftest-live.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.1",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  }
+}
