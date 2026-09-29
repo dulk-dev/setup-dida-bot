@@ -2,6 +2,8 @@
 
 本 daemon 在认领前向 Grok Bot 的 webhook 例程 POST JSON。URL 和密钥只写在本机 `config.json`，不要提交，不要写进本文档。
 
+日常派活与标签见 [usage.md](usage.md)；总览见 [README](../README.md)。
+
 ## 1. 创建例程并填本地配置
 
 1. 在 Grok Bot 里新建（或使用）webhook 例程，建议名称「setup-dida-bot webhook」。
