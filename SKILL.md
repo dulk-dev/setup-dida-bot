@@ -5,15 +5,14 @@ description: use when setting up the local setup-dida-bot daemon that merges WeC
 
 # setup-dida-bot
 
-本地 Node daemon，替代已暂停的 Cloudflare Worker `dida-bot-merge`：轮询滴答 Open API，合并微信拆分的 `@bot` 空正文碎片，用 `todo` / `doing` / `done` 认领，再 POST「setup-dida-bot webhook」。载荷 `source` 固定为 `setup-dida-bot`。
+本地 Node daemon：轮询滴答 Open API，合并微信拆分的 `@bot` 空正文碎片，用 `todo` / `doing` / `done` 认领，再 POST「setup-dida-bot webhook」。载荷 `source` 固定为 `setup-dida-bot`。
 
 人类可读的总览在 [README.md](README.md)。webhook 请求头、载荷和例程提示词在 [docs/webhook.md](docs/webhook.md)。
 
 ## 何时使用
 
-- 在本机跑正式的 Dida 合并认领，默认标记是 `@bot` / `todo` / `doing` / `done`
+- 在本机跑 Dida 合并认领，默认标记是 `@bot` / `todo` / `doing` / `done`
 - 为 Grok Bot 例程「setup-dida-bot webhook」接上 `dida_bot_work`
-- 确认线上 Worker `dida-bot-merge` 保持暂停，避免双写
 
 ## 安装
 
@@ -70,7 +69,7 @@ description: use when setting up the local setup-dida-bot daemon that merges WeC
 
 ## 标记
 
-出厂默认：
+默认：
 
 - `botMarker`: `@bot`
 - `notMarker`: `@not`
@@ -79,9 +78,7 @@ description: use when setting up the local setup-dida-bot daemon that merges WeC
 - `tagParent`: `bot`
 - `wechatCaptureTag`: `微信采集`
 
-跑起来之前确认 CF Worker `dida-bot-merge` 已暂停。不要在这个 skill 里部署或修改该 Worker。
-
-第二条隔离车道可以在本机 `config.json` 改成 `@botx` / `@notx` / `x-todo` / `x-doing` / `x-done` / `x-freeze` / `x-bot`。这不是出厂默认。`@bot` 是 `@botx` 的前缀，不要和默认车道对着同一批收件箱同时开。
+这些字段都在本机 `config.json` 里。要改标记就整组一起改，改完重启 daemon。
 
 ## Webhook 形态
 

@@ -2,7 +2,7 @@
   "name": "setup-dida-bot",
   "private": true,
   "version": "0.1.0",
-  "description": "Local Grok-Bot alternative to Cloudflare Worker dida-bot-merge",
+  "description": "Local Node daemon that merges WeChat-split Dida tasks and wakes a Grok Bot webhook",
   "type": "module",
   "scripts": {
     "once": "tsx src/cli.ts once",

@@ -1,6 +1,6 @@
 # 安全
 
-开源评审和日常使用时，下面这些留在本机，不要提交、不要贴进 issue / PR / 聊天。
+下面这些留在本机，不要提交、不要贴进 issue、PR 或聊天。
 
 ## 必须留在本机
 
@@ -18,6 +18,5 @@
 ## 运行时
 
 - 进程加载 token 时只记录前后各 4 个字符的预览。不要在日志、状态页或 PR 里打印完整 `access_token` / `webhookSecret`。
-- 状态页默认绑定 `127.0.0.1:8788`。保持本机回环；不要改成对公网监听。
-- 出厂标记是 `@bot` / `todo` / `doing` / `done`。线上 Cloudflare Worker `dida-bot-merge` 必须保持暂停，避免和本 daemon 双写。本仓库不部署该 Worker。
+- 状态页默认绑定 `127.0.0.1:8788`。保持本机回环，不要改成对公网监听。
 - 「setup-dida-bot webhook」的 URL 和 secret 只存在本机 `config.json`。

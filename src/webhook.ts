@@ -20,7 +20,7 @@ export interface PendingBotItem {
   lifecycle?: string;
 }
 
-/** Unified wake — aligns with Worker but source is setup-dida-bot. */
+/** Wake payload. source is always setup-dida-bot. */
 export interface WorkWebhookPayload {
   event: "dida_bot_work";
   source: "setup-dida-bot";

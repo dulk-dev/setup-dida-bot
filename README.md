@@ -6,7 +6,7 @@
 
 微信转发到滴答清单时，一条消息常被拆成多条任务：有正文的上下文，以及标题里带 `@bot`、正文为空的碎片。需要把这些空正文碎片并回上下文任务，用生命周期标签 `todo` → `doing` → `done` 认领，再 webhook 唤醒 Grok Bot。
 
-先前这条链路跑在 Cloudflare Worker `dida-bot-merge` 上。Worker 依赖 Cloudflare 运行时，不适合作为可开源的本机产品。本仓库是正式的本地 Node daemon：轮询滴答 Open API，完成合并和认领，并向 Grok Bot 例程「setup-dida-bot webhook」发唤醒。URL 和密钥只留在本机。
+本仓库是跑在本机的 Node daemon：轮询滴答 Open API，完成合并和认领，并向 Grok Bot 例程「setup-dida-bot webhook」发唤醒。URL 和密钥只留在本机。
 
 ## 当前方案
 
@@ -26,7 +26,7 @@ flowchart LR
 2. 合并后的任务进入 `todo`。webhook 返回成功后，叶子改为 `doing`。
 3. 向「setup-dida-bot webhook」POST `event: dida_bot_work`，`source` 固定为 `setup-dida-bot`。Bot 读任务、执行标题和正文里的指令，并把叶子改为 `done`。Bot 侧步骤见 [docs/webhook.md](docs/webhook.md)。
 
-出厂默认标记：
+默认标记：
 
 | 用途 | 默认 |
 |------|------|
@@ -37,23 +37,9 @@ flowchart LR
 | 父标签 | `bot`（`ensureParentTag: true` 时会确保存在） |
 | 微信来源 | `微信采集` |
 
-### 和旧 Worker 的能力对照
+标记名都在 `config.json` 里，改的时候整组一起改，改完重启 daemon。
 
-标记与旧 Worker 相同。差异在运行时，不在标签名。
-
-| 能力 | 线上 Worker `dida-bot-merge` | 本仓库 |
-|------|------------------------------|--------|
-| 并发与去重 | Cloudflare KV | 文件锁 `data/merge.lock` + 已处理集合 `data/processed.json` |
-| OAuth 到期提醒 webhook | Worker 侧会发 | 还没有。`src/webhook.ts` 里有 `dida_token_expiry_reminder` 类型，daemon 目前不发送 |
-| 控制面 | Worker 配置 | 本机状态页，默认只听 `http://127.0.0.1:8788/` |
-| webhook `source` | Worker 自己的上游标识 | 固定 `setup-dida-bot` |
-| 标记 | `@bot` / `todo` / `doing` / `done` | 同一套 |
-
-### 迁移与双写
-
-线上 Worker `dida-bot-merge` 若仍在跑，会和本 daemon 写同一批 `@bot` / `todo` / `doing` / `done` 任务。**该 Worker 应保持暂停。** 两边同时开就是双写。
-
-需要第二条隔离车道时，可以在本机 `config.json` 改成 `@botx` / `@notx` / `x-bot` / `x-todo` / `x-doing` / `x-done` / `x-freeze`。这不是出厂默认。`@bot` 是 `@botx` 的前缀，两条车道不要对着同一批收件箱同时开。
+本机同时只跑一轮：文件锁是 `data/merge.lock`，已处理碎片记在 `data/processed.json`。状态页默认只听 `http://127.0.0.1:8788/`。webhook 载荷的 `source` 固定为 `setup-dida-bot`。daemon 不发送 token 到期提醒。
 
 ## 快速开始
 
@@ -81,7 +67,7 @@ npm install
 cp config.example.json config.json
 ```
 
-编辑本机的 `config.json`，填入例程「setup-dida-bot webhook」的 `webhookUrl` 与 `webhookSecret`（只放本机，见 [安全](#安全)）。创建例程、请求头和载荷见 [docs/webhook.md](docs/webhook.md)。复制出来的 `config.json` 已经是生产标记 `@bot` / `todo` / `doing` / `done`。
+编辑本机的 `config.json`，填入例程「setup-dida-bot webhook」的 `webhookUrl` 与 `webhookSecret`（只放本机，见 [安全](#安全)）。创建例程、请求头和载荷见 [docs/webhook.md](docs/webhook.md)。复制出来的配置使用 `@bot`、`@not`、`bot`、`todo`、`doing`、`done`、`freeze`。
 
 ```bash
 npm test          # vitest，断言默认标记 @bot / todo
@@ -145,6 +131,5 @@ npm run ui        # http://127.0.0.1:8788/ 可改 interval / enabled
 - 不要提交 `config.json`。其中的 `webhookUrl`、`webhookSecret` 只放在克隆后的本地文件里。
 - 不要提交 `~/.config/dida-cli/config.json`、`data/status.json`、`data/processed.json`。
 - 文档和示例只用虚构任务 id。
-- 出厂标记已经是 `@bot` / `todo` / `doing` / `done`。跑本 daemon 之前，确认线上 Cloudflare Worker `dida-bot-merge` 处于暂停，避免双写。本仓库不部署、不修改该 Worker。
 
 给代理用的安装步骤与本 README 对齐，见 [SKILL.md](SKILL.md)。

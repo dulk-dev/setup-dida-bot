@@ -21,7 +21,7 @@ import {
   type MergeTask,
 } from "../src/merge-logic.ts";
 
-const m = createMarkers(); // production defaults: @bot / @not / freeze
+const m = createMarkers();
 const BOT = m.botMarker;
 const NOT = m.notMarker;
 const FREEZE = m.tagFreeze;
@@ -381,8 +381,8 @@ describe("shanghaiCalendarDate / daysUntil", () => {
   });
 });
 
-describe("production marker defaults", () => {
-  it("ships @bot / todo / doing / done", () => {
+describe("default markers", () => {
+  it("uses @bot / todo / doing / done", () => {
     expect(m.botMarker).toBe("@bot");
     expect(m.notMarker).toBe("@not");
     expect(m.tagTodo).toBe("todo");

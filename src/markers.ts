@@ -1,10 +1,7 @@
 /**
  * Marker names for merge, claim, and freeze.
- *
- * Shipped defaults are the production set (@bot / todo / doing / done).
- * Override via config.json (for example @botx / x-todo) only for a second
- * isolated lane. Do not run that lane against the same inbox as these defaults:
- * `@bot` is a prefix of `@botx`.
+ * Defaults: @bot / @not / bot / todo / doing / done / freeze.
+ * Override the whole set together via config.json.
  */
 
 export interface MarkersConfig {

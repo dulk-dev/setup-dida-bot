@@ -76,7 +76,7 @@ describe("isTodoClaimCandidate", () => {
   });
 });
 
-describe("custom @botx / x-* lane", () => {
+describe("configured markers", () => {
   const lane = createMarkers({
     botMarker: "@botx",
     notMarker: "@notx",

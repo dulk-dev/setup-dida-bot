@@ -84,7 +84,7 @@ function pageHtml(config: AppConfig): string {
         <span class="pill">${markers.tagFreeze}</span>
       </div>
     </div>
-    <p class="muted" style="margin-top:0.8rem">标记只读 — 改 config.json 后重启。线上 Worker dida-bot-merge 请保持暂停，避免和本 daemon 双写。隔离车道可改用 @botx / x-*，不要和默认标记对着同一批收件箱同时开。</p>
+    <p class="muted" style="margin-top:0.8rem">标记只读。要改标记，编辑 config.json 后重启。</p>
   </div>
 
   <div class="card">
