@@ -143,7 +143,7 @@ daemon 认领前会 POST 到例程 URL。URL 与密钥**只写本机** `config.j
 
 1. 在 Grok Bot 创建（或使用）webhook 例程，建议名：**setup-dida-bot webhook**。
 2. 把例程给出的 URL、secret 填进本机 `config.json` 的 `webhookUrl` / `webhookSecret`。
-3. 例程提示词用 [docs/webhook.md](docs/webhook.md) 里的规范模板（校验 `event` / `source`，处理 `pending`，回写 `done` 等）。
+3. 例程提示词用 [docs/webhook.md](docs/webhook.md) 里的精简模板（校验一行 + 处理 `pending` + 回写；网关说明只在文档、不进例程）。
 
 | 情况 | 怎么办 |
 |------|--------|
