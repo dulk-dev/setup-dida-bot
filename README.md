@@ -39,7 +39,7 @@ flowchart LR
 1. 找出标题含 **`@bot`**、正文为空、且带 **`微信采集`** 的碎片，在时间窗口内并入对应上下文任务。
 2. 同一窗口命中多条上下文 → 把 `@bot` 改写成 **`@not`**，打上 **`freeze`**，不再自动合并。
 3. 合并后的任务进入生命周期叶子 **`todo`**；webhook HTTP 成功后改为 **`doing`**。
-4. POST `event: dida_bot_work`，`source` 固定为 `setup-dida-bot`。Bot 读任务、执行指令，再把叶子改为 **`done`**（保留 `微信采集`；**不要勾选完成**）。细节见 [docs/webhook.md](docs/webhook.md)。
+4. POST `event: dida_bot_work`，`source` 固定为 `setup-dida-bot`。Bot 读任务、执行指令，再把叶子改为 **`done`**（保留 `微信采集`；**不要勾选完成**）。写回时**不得整段覆盖转发正文**；结论用 `\n\n---\n\n` 追加文尾或写在评论。细节见 [docs/webhook.md](docs/webhook.md)。
 
 默认标记（均可在 `config.json` 整组改名，改完重启 daemon）：
 
