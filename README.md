@@ -6,7 +6,9 @@
 
 微信转发到滴答清单时，一条消息常被拆成多条任务：有正文的上下文，以及标题里带 `@bot`、正文为空的碎片。需要把这些空正文碎片并回上下文任务，用生命周期标签 `todo` → `doing` → `done` 认领，再 webhook 唤醒 Grok Bot。
 
-本仓库是跑在本机的 Node daemon：通过 dida CLI 完成合并和认领，并向 Grok Bot 例程「setup-dida-bot webhook」发唤醒。URL 和密钥只留在本机。
+**默认跑在 Grok Bot 的云端电脑上**（共享工作区 `/workspace/projects/setup-dida-bot`），不是用户自己的 Mac / Windows。用户本机可以另装一份，但 Chaochun 这边的生产路径就是云端机上的 daemon。
+
+本仓库是 Node daemon：通过 dida CLI 完成合并和认领，并向 Grok Bot 例程「setup-dida-bot webhook」发唤醒。URL 和密钥只留在跑 daemon 的那台机器上（默认即 Grok Bot 云端机），不要提交进仓库。
 
 ## 当前方案
 
@@ -67,7 +69,7 @@ npm install
 cp config.example.json config.json
 ```
 
-编辑本机的 `config.json`，填入例程「setup-dida-bot webhook」的 `webhookUrl` 与 `webhookSecret`（只放本机，见 [安全](#安全)）。创建例程、请求头和载荷见 [docs/webhook.md](docs/webhook.md)。复制出来的配置使用 `@bot`、`@not`、`bot`、`todo`、`doing`、`done`、`freeze`。
+编辑跑 daemon 那台机器上的 `config.json`，填入例程「setup-dida-bot webhook」的 `webhookUrl` 与 `webhookSecret`（只放该机，见 [安全](#安全)）。创建例程、请求头和载荷见 [docs/webhook.md](docs/webhook.md)。复制出来的配置使用 `@bot`、`@not`、`bot`、`todo`、`doing`、`done`、`freeze`。
 
 ```bash
 npm test          # vitest，断言默认标记 @bot / todo

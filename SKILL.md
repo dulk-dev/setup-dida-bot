@@ -5,13 +5,13 @@ description: use when setting up the local setup-dida-bot daemon that merges WeC
 
 # setup-dida-bot
 
-本地 Node daemon：通过 `dida` CLI 读写滴答清单，合并微信拆分的 `@bot` 空正文碎片，用 `todo` / `doing` / `done` 认领，再 POST「setup-dida-bot webhook」。载荷 `source` 固定为 `setup-dida-bot`。本进程不读取 token。
+Node daemon（**默认部署在 Grok Bot 云端电脑** `/workspace/projects/setup-dida-bot`，不是用户个人电脑）：通过 `dida` CLI 读写滴答清单，合并微信拆分的 `@bot` 空正文碎片，用 `todo` / `doing` / `done` 认领，再 POST「setup-dida-bot webhook」。载荷 `source` 固定为 `setup-dida-bot`。本进程不读取 token。
 
 人类可读的总览在 [README.md](README.md)。webhook 请求头、载荷和例程提示词在 [docs/webhook.md](docs/webhook.md)。
 
 ## 何时使用
 
-- 在本机跑 Dida 合并认领，默认标记是 `@bot` / `todo` / `doing` / `done`
+- 在 Grok Bot 云端机（或自选机器）跑 Dida 合并认领，默认标记是 `@bot` / `todo` / `doing` / `done`
 - 为 Grok Bot 例程「setup-dida-bot webhook」接上 `dida_bot_work`
 
 ## 安装
@@ -46,7 +46,7 @@ description: use when setting up the local setup-dida-bot daemon that merges WeC
    - `webhookUrl`：「setup-dida-bot webhook」的 URL，只写本地文件
    - `webhookSecret`：与例程密钥一致，只写本地文件
    - `webhookAuthStyle`：默认 `both`（同时发送 `Authorization: Bearer <secret>`、`X-Webhook-Secret`、`X-Automation-Key`）。也可设 `bearer` 或 `header`。三种风格的对照表在 [docs/webhook.md](docs/webhook.md)
-   - `intervalSeconds`：建议 `120`
+   - `intervalSeconds`：生产建议 `30`（下限 15）
 
    例程提示词使用 [docs/webhook.md](docs/webhook.md) 里的规范模板：校验 `event` / `source`，对 `lifecycle` 为 `doing` 的 `pending` 用 Dida MCP 读任务并执行。正文写结论，评论写过程；有可执行下一步才写个人建议；难认标题可改短到不超过 30 字；叶子改为 `done` 并保留 `微信采集`；不勾选完成；指令没有明确要求编码时不派 Oct。
 

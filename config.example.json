@@ -1,6 +1,6 @@
 {
   "enabled": true,
-  "intervalSeconds": 120,
+  "intervalSeconds": 30,
   "didaBinary": "dida",
   "botMarker": "@bot",
   "notMarker": "@not",
