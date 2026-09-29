@@ -1,8 +1,7 @@
 import type { AppConfig } from "./config.ts";
-import { loadAccessToken, tokenPreview } from "./config.ts";
 import {
   DidaApiError,
-  DidaClient,
+  DidaCliClient,
   type CreateTagInput,
   type DidaApi,
   type DidaTask,
@@ -684,15 +683,14 @@ export async function runMergeAndNotify(
   }
 
   try {
-    const token = loadAccessToken(config.tokenPath);
     console.log(
       JSON.stringify({
-        msg: "token_loaded",
-        preview: tokenPreview(token),
+        msg: "dida_cli_ready",
+        binary: config.didaBinary,
       }),
     );
 
-    const api = new DidaClient(token, config.apiBase);
+    const api = new DidaCliClient({ binary: config.didaBinary });
     const result = await runMerge(api, config);
     const mergedCount = result.merges.length;
     const notted = result.nots.length;

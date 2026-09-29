@@ -1,8 +1,7 @@
 {
   "enabled": true,
   "intervalSeconds": 120,
-  "apiBase": "https://api.dida365.com/open/v1",
-  "tokenPath": "~/.config/dida-cli/config.json",
+  "didaBinary": "dida",
   "botMarker": "@bot",
   "notMarker": "@not",
   "wechatCaptureTag": "微信采集",

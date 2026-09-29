@@ -4,8 +4,8 @@
  * Does NOT delete the merged main on success (so bot can act); deletes fragment if still present.
  * Set CLEANUP=1 to delete main after verifying claim.
  */
-import { loadAccessToken, loadConfig } from "../src/config.ts";
-import { DidaClient } from "../src/dida-api.ts";
+import { loadConfig } from "../src/config.ts";
+import { DidaCliClient } from "../src/dida-api.ts";
 import { runMergeAndNotify } from "../src/run.ts";
 
 const PREFIX = "[setup-dida-bot-test]";
@@ -16,8 +16,7 @@ async function main() {
   if (!config.webhookUrl || !config.webhookSecret) {
     throw new Error("config.json missing webhookUrl/webhookSecret");
   }
-  const token = loadAccessToken(config.tokenPath);
-  const api = new DidaClient(token, config.apiBase);
+  const api = new DidaCliClient({ binary: config.didaBinary });
   const m = config.markers;
   const stamp = Date.now();
   const created: Array<{ projectId: string; id: string }> = [];

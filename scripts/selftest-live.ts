@@ -1,5 +1,5 @@
 /**
- * Live selftest against real Dida Open API + a local mock webhook.
+ * Live selftest against the dida CLI + a local mock webhook.
  *
  * Creates:
  *   1) context task tagged 微信采集 with body
@@ -11,8 +11,8 @@
 import { createServer, type IncomingMessage } from "node:http";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { loadAccessToken, loadConfig, PROJECT_ROOT } from "../src/config.ts";
-import { DidaClient } from "../src/dida-api.ts";
+import { loadConfig, PROJECT_ROOT } from "../src/config.ts";
+import { DidaCliClient } from "../src/dida-api.ts";
 import { withBotLifecycleTag } from "../src/markers.ts";
 import { runMergeAndNotify } from "../src/run.ts";
 import type { WorkWebhookPayload } from "../src/webhook.ts";
@@ -72,8 +72,7 @@ async function startMockWebhook(): Promise<{
 
 async function main(): Promise<void> {
   const baseConfig = loadConfig();
-  const token = loadAccessToken(baseConfig.tokenPath);
-  const api = new DidaClient(token, baseConfig.apiBase);
+  const api = new DidaCliClient({ binary: baseConfig.didaBinary });
   const m = baseConfig.markers;
 
   const mock = await startMockWebhook();
@@ -152,7 +151,7 @@ async function main(): Promise<void> {
       }),
     );
 
-    // Allow Open API index / inbox to settle.
+    // Allow the inbox index to settle.
     await sleep(1500);
 
     const result = await runMergeAndNotify(config);

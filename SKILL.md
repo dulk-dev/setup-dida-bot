@@ -5,7 +5,7 @@ description: use when setting up the local setup-dida-bot daemon that merges WeC
 
 # setup-dida-bot
 
-本地 Node daemon：轮询滴答 Open API，合并微信拆分的 `@bot` 空正文碎片，用 `todo` / `doing` / `done` 认领，再 POST「setup-dida-bot webhook」。载荷 `source` 固定为 `setup-dida-bot`。
+本地 Node daemon：通过 `dida` CLI 读写滴答清单，合并微信拆分的 `@bot` 空正文碎片，用 `todo` / `doing` / `done` 认领，再 POST「setup-dida-bot webhook」。载荷 `source` 固定为 `setup-dida-bot`。本进程不读取 token。
 
 人类可读的总览在 [README.md](README.md)。webhook 请求头、载荷和例程提示词在 [docs/webhook.md](docs/webhook.md)。
 
@@ -18,9 +18,9 @@ description: use when setting up the local setup-dida-bot daemon that merges WeC
 
 命令都在**克隆后的项目根目录**执行（含 `package.json` 的那一层）。不要写死某台机器上的绝对路径。
 
-1. **dida-cli**（单独安装；本仓库只读 token）
+1. **dida CLI**（单独安装；本仓库调用 `dida … --json`，不读取 token）
 
-   与默认 `tokenPath` `~/.config/dida-cli/config.json` 的 `access_token` 对齐的是 npm 包 `@suibiji/dida-cli`。该包没有公开 GitHub 仓库字段，安装说明以 npm 与滴答帮助为准：
+   npm 包 `@suibiji/dida-cli` 没有公开 GitHub 仓库字段。安装说明：
 
    - https://www.npmjs.com/package/@suibiji/dida-cli
    - https://help.dida365.com/articles/7464976698707017728
@@ -29,6 +29,8 @@ description: use when setting up the local setup-dida-bot daemon that merges WeC
    npm install -g @suibiji/dida-cli
    dida auth login
    ```
+
+   `config.json` 的 `didaBinary` 默认是 `dida`。命令不在 PATH 上时改成可执行文件路径。
 
 2. **项目**
 
@@ -65,7 +67,7 @@ description: use when setting up the local setup-dida-bot daemon that merges WeC
    npm run selftest
    ```
 
-   会创建标题前缀为 `[setup-dida-bot-test]` 的收件箱任务对，合并后打到本机 mock webhook，再清理。需要已经 `dida auth login`。
+   会通过 `dida` CLI 创建标题前缀为 `[setup-dida-bot-test]` 的收件箱任务对，合并后打到本机 mock webhook，再清理。需要已经 `dida auth login`。
 
 ## 标记
 
