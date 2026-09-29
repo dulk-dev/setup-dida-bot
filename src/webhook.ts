@@ -16,7 +16,7 @@ export interface PendingBotItem {
   title: string;
   reason: PendingReason;
   tags?: string[];
-  /** After successful claim path: lifecycle leaf (e.g. x-doing). */
+  /** After successful claim path: lifecycle leaf (e.g. doing). */
   lifecycle?: string;
 }
 

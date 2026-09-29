@@ -5,15 +5,15 @@ description: use when setting up the local setup-dida-bot daemon that merges WeC
 
 # setup-dida-bot
 
-本地替代 Cloudflare Worker `dida-bot-merge`：轮询滴答 Open API，合并微信拆分的 `@botx` 空正文碎片，认领后 POST webhook 给 Grok Bot。`source` 固定为 `setup-dida-bot`。
+本地 Node daemon，替代已暂停的 Cloudflare Worker `dida-bot-merge`：轮询滴答 Open API，合并微信拆分的 `@bot` 空正文碎片，用 `todo` / `doing` / `done` 认领，再 POST「setup-dida-bot webhook」。载荷 `source` 固定为 `setup-dida-bot`。
 
 人类可读的总览在 [README.md](README.md)。webhook 请求头、载荷和例程提示词在 [docs/webhook.md](docs/webhook.md)。
 
 ## 何时使用
 
-- 在本机跑 Dida 合并，而不部署或改动线上 Worker
-- 为 Grok Bot 接上 `dida_bot_work` 上游
-- 用独立标记（`@botx` / `x-todo` / `x-doing` / `x-done`）联调，避开生产 `todo` / `doing` / `done`
+- 在本机跑正式的 Dida 合并认领，默认标记是 `@bot` / `todo` / `doing` / `done`
+- 为 Grok Bot 例程「setup-dida-bot webhook」接上 `dida_bot_work`
+- 确认线上 Worker `dida-bot-merge` 保持暂停，避免双写
 
 ## 安装
 
@@ -42,12 +42,12 @@ description: use when setting up the local setup-dida-bot daemon that merges WeC
 
    编辑本地 `config.json`（不要提交）：
 
-   - `webhookUrl`：Grok Bot webhook 例程 URL
-   - `webhookSecret`：与例程密钥一致
+   - `webhookUrl`：「setup-dida-bot webhook」的 URL，只写本地文件
+   - `webhookSecret`：与例程密钥一致，只写本地文件
    - `webhookAuthStyle`：默认 `both`（同时发送 `Authorization: Bearer <secret>`、`X-Webhook-Secret`、`X-Automation-Key`）。也可设 `bearer` 或 `header`。三种风格的对照表在 [docs/webhook.md](docs/webhook.md)
-   - `intervalSeconds`：联调建议 `120`
+   - `intervalSeconds`：建议 `120`
 
-   例程提示词使用 [docs/webhook.md](docs/webhook.md) 里的规范模板：校验 `event` / `source`，对 `lifecycle` 为 doing 叶子的 `pending` 用 Dida MCP 读任务并执行，正文写结论、评论写过程，叶子改为 `x-done` 并保留 `微信采集`。
+   例程提示词使用 [docs/webhook.md](docs/webhook.md) 里的规范模板：校验 `event` / `source`，对 `lifecycle` 为 `doing` 的 `pending` 用 Dida MCP 读任务并执行。正文写结论，评论写过程；有可执行下一步才写个人建议；难认标题可改短到不超过 30 字；叶子改为 `done` 并保留 `微信采集`；不勾选完成；指令没有明确要求编码时不派 Oct。
 
 4. **启动**
 
@@ -70,30 +70,26 @@ description: use when setting up the local setup-dida-bot daemon that merges WeC
 
 ## 标记
 
-默认（保持这套，除非操作者明确要接管生产标签）：
+出厂默认：
 
-- `botMarker`: `@botx`
-- `notMarker`: `@notx`
-- `tagTodo` / `tagDoing` / `tagDone`: `x-todo` / `x-doing` / `x-done`
-- `tagFreeze`: `x-freeze`
-- `tagParent`: `x-bot`
+- `botMarker`: `@bot`
+- `notMarker`: `@not`
+- `tagTodo` / `tagDoing` / `tagDone`: `todo` / `doing` / `done`
+- `tagFreeze`: `freeze`
+- `tagParent`: `bot`
 - `wechatCaptureTag`: `微信采集`
 
-### 切到生产标记
+跑起来之前确认 CF Worker `dida-bot-merge` 已暂停。不要在这个 skill 里部署或修改该 Worker。
 
-1. 停掉本机 `npm run daemon` 和 UI。
-2. 停掉线上 CF Worker `dida-bot-merge`，确认它不再写同一批任务。
-3. 两边都停了之后，把本机 `config.json` 改成 `@bot` / `@not` / `todo` / `doing` / `done` / `freeze` / `bot`。
-4. 再 `npm run once` 看一轮。
-
-默认配置保持 `x-*`。不要在这个 skill 里改仓库默认标记，也不要改 Cloudflare Worker。
+第二条隔离车道可以在本机 `config.json` 改成 `@botx` / `@notx` / `x-todo` / `x-doing` / `x-done` / `x-freeze` / `x-bot`。这不是出厂默认。`@bot` 是 `@botx` 的前缀，不要和默认车道对着同一批收件箱同时开。
 
 ## Webhook 形态
 
+- 例程名：`setup-dida-bot webhook`
 - `event`: `dida_bot_work`
 - `source`: `setup-dida-bot`
-- `pending[].lifecycle`: 认领成功路径为 `x-doing`（或配置的 `tagDoing`）
-- 完整字段、虚构 id 示例、认证头，以及「网关可能剥掉可见载荷里的认证头」的说明，都在 [docs/webhook.md](docs/webhook.md)
+- `pending[].lifecycle`: 认领成功路径为 `doing`（或配置的 `tagDoing`）
+- 完整字段、虚构 id 示例、认证头、写回规范，以及「网关可能剥掉可见载荷里的认证头」的说明，都在 [docs/webhook.md](docs/webhook.md)
 
 ## 注意
 

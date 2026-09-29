@@ -3,8 +3,8 @@
  *
  * Creates:
  *   1) context task tagged 微信采集 with body
- *   2) fragment task titled "... @botx ..." with empty content
- * Runs merge once, asserts merge + webhook claim (x-doing), then cleans up.
+ *   2) fragment task titled "... @bot ..." with empty content
+ * Runs merge once, asserts merge + webhook claim (doing), then cleans up.
  *
  * Titles use prefix [setup-dida-bot-test] for easy identification.
  */
@@ -115,7 +115,7 @@ async function main(): Promise<void> {
   );
 
   try {
-    // Ensure tags exist (x-todo etc.) before create — run ensure via a dry path.
+    // Ensure tags exist (todo etc.) before create — run ensure via a dry path.
     const config = loadConfig(selfConfigPath);
 
     const contextTitle = `${PREFIX} context ${stamp}`;
@@ -184,7 +184,7 @@ async function main(): Promise<void> {
       result.claimed >= 1 &&
       result.pending.some((p) => p.lifecycle === m.tagDoing);
 
-    // Verify context (or surviving main) has x-doing after claim.
+    // Verify context (or surviving main) has the doing tag after claim.
     let doingOk = false;
     const mainId =
       result.merges.find((item) => item.contextId)?.contextId ?? context.id;
@@ -231,7 +231,7 @@ async function main(): Promise<void> {
 
     console.log(JSON.stringify({ msg: "selftest_pass" }));
   } finally {
-    // Cleanup: delete remaining test tasks, or tag x-done if delete fails.
+    // Cleanup: delete remaining test tasks, or tag done if delete fails.
     for (const item of createdIds) {
       try {
         await api.deleteTask(item.projectId, item.id);
