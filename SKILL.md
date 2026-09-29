@@ -5,13 +5,13 @@ description: use when setting up the local setup-dida-bot daemon that merges WeC
 
 # setup-dida-bot
 
-Node daemon（**默认部署在 Grok Bot 云端电脑** `/workspace/projects/setup-dida-bot`，不是用户个人电脑）：通过 `dida` CLI 读写滴答清单，合并微信拆分的 `@bot` 空正文碎片，用 `todo` / `doing` / `done` 认领，再 POST「setup-dida-bot webhook」。载荷 `source` 固定为 `setup-dida-bot`。本进程不读取 token。
+Node daemon（**推荐部署在 Grok Bot 云端电脑**长期常驻；也可装在任意能跑 `dida` CLI 的机器上）：通过 `dida` CLI 读写滴答清单，合并微信拆分的 `@bot` 空正文碎片，用 `todo` / `doing` / `done` 认领，再 POST「setup-dida-bot webhook」。载荷 `source` 固定为 `setup-dida-bot`。本进程不读取 token。
 
 人类可读的总览在 [README.md](README.md)。webhook 请求头、载荷和例程提示词在 [docs/webhook.md](docs/webhook.md)。
 
 ## 何时使用
 
-- 在 Grok Bot 云端机（或自选机器）跑 Dida 合并认领，默认标记是 `@bot` / `todo` / `doing` / `done`
+- 跑 Dida 合并认领（推荐 Grok Bot 云端机），默认标记是 `@bot` / `todo` / `doing` / `done`
 - 为 Grok Bot 例程「setup-dida-bot webhook」接上 `dida_bot_work`
 
 ## 安装

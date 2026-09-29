@@ -6,9 +6,9 @@
 
 微信转发到滴答清单时，一条消息常被拆成多条任务：有正文的上下文，以及标题里带 `@bot`、正文为空的碎片。需要把这些空正文碎片并回上下文任务，用生命周期标签 `todo` → `doing` → `done` 认领，再 webhook 唤醒 Grok Bot。
 
-**默认跑在 Grok Bot 的云端电脑上**（共享工作区 `/workspace/projects/setup-dida-bot`），不是用户自己的 Mac / Windows。用户本机可以另装一份，但 Chaochun 这边的生产路径就是云端机上的 daemon。
+**推荐跑在 Grok Bot 的云端电脑上**长期常驻（例如共享工作区里的项目目录），也可以装在任意一台能登录 `dida` CLI、能出网的机器上。
 
-本仓库是 Node daemon：通过 dida CLI 完成合并和认领，并向 Grok Bot 例程「setup-dida-bot webhook」发唤醒。URL 和密钥只留在跑 daemon 的那台机器上（默认即 Grok Bot 云端机），不要提交进仓库。
+本仓库是 Node daemon：通过 dida CLI 完成合并和认领，并向 Grok Bot 例程「setup-dida-bot webhook」发唤醒。URL 和密钥只留在跑 daemon 的那台机器上，不要提交进仓库。
 
 ## 当前方案
 

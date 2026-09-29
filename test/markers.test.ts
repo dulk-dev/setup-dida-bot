@@ -18,8 +18,8 @@ describe("bot lifecycle tag helpers", () => {
     expect(isBotLifecycleTag(m, m.tagDone)).toBe(true);
     expect(isBotLifecycleTag(m, m.tagParent)).toBe(false);
     expect(isBotLifecycleTag(m, m.tagFreeze)).toBe(false);
-    expect(isBotLifecycleTag(m, "x-todo")).toBe(false);
-    expect(isBotLifecycleTag(m, "x-doing")).toBe(false);
+    expect(isBotLifecycleTag(m, "other-todo")).toBe(false);
+    expect(isBotLifecycleTag(m, "lane-doing")).toBe(false);
     expect(m.nestedTags).toEqual(["todo", "doing", "done", "freeze"]);
   });
 
@@ -72,38 +72,43 @@ describe("isTodoClaimCandidate", () => {
     expect(isTodoClaimCandidate(undefined, m)).toBe(true);
     expect(isTodoClaimCandidate([m.tagTodo], m)).toBe(true);
     expect(isTodoClaimCandidate([m.tagDoing], m)).toBe(false);
-    expect(isTodoClaimCandidate(["x-todo"], m)).toBe(false);
+    expect(isTodoClaimCandidate(["other-todo"], m)).toBe(false);
   });
 });
 
 describe("configured markers", () => {
   const lane = createMarkers({
-    botMarker: "@botx",
-    notMarker: "@notx",
-    tagParent: "x-bot",
-    tagTodo: "x-todo",
-    tagDoing: "x-doing",
-    tagDone: "x-done",
-    tagFreeze: "x-freeze",
+    botMarker: "@agent",
+    notMarker: "@skip",
+    tagParent: "agent",
+    tagTodo: "lane-todo",
+    tagDoing: "lane-doing",
+    tagDone: "lane-done",
+    tagFreeze: "lane-freeze",
   });
 
-  it("uses the configured markers instead of production defaults", () => {
-    expect(lane.botMarker).toBe("@botx");
-    expect(lane.notMarker).toBe("@notx");
-    expect(lane.tagParent).toBe("x-bot");
-    expect(lane.tagTodo).toBe("x-todo");
-    expect(lane.tagDoing).toBe("x-doing");
-    expect(lane.tagDone).toBe("x-done");
-    expect(lane.tagFreeze).toBe("x-freeze");
-    expect(lane.nestedTags).toEqual(["x-todo", "x-doing", "x-done", "x-freeze"]);
-    expect(isBotLifecycleTag(lane, "x-todo")).toBe(true);
+  it("uses configured markers instead of the defaults", () => {
+    expect(lane.botMarker).toBe("@agent");
+    expect(lane.notMarker).toBe("@skip");
+    expect(lane.tagParent).toBe("agent");
+    expect(lane.tagTodo).toBe("lane-todo");
+    expect(lane.tagDoing).toBe("lane-doing");
+    expect(lane.tagDone).toBe("lane-done");
+    expect(lane.tagFreeze).toBe("lane-freeze");
+    expect(lane.nestedTags).toEqual([
+      "lane-todo",
+      "lane-doing",
+      "lane-done",
+      "lane-freeze",
+    ]);
+    expect(isBotLifecycleTag(lane, "lane-todo")).toBe(true);
     expect(isBotLifecycleTag(lane, "todo")).toBe(false);
-    expect(isTodoClaimCandidate(["x-todo"], lane)).toBe(true);
+    expect(isTodoClaimCandidate(["lane-todo"], lane)).toBe(true);
     expect(isTodoClaimCandidate(["todo"], lane)).toBe(false);
-    expect(hasFreezeTag(lane, ["x-freeze"])).toBe(true);
+    expect(hasFreezeTag(lane, ["lane-freeze"])).toBe(true);
     expect(hasFreezeTag(lane, ["freeze"])).toBe(false);
     expect(
-      isBotFragment({ title: "@botx summarize", content: "" }, lane),
+      isBotFragment({ title: "@agent summarize", content: "" }, lane),
     ).toBe(true);
     expect(isBotFragment({ title: "@bot summarize", content: "" }, lane)).toBe(
       false,
