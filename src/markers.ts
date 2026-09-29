@@ -48,8 +48,8 @@ export const DEFAULT_MARKERS_CONFIG: MarkersConfig = {
   tagDone: "done",
   tagFreeze: "freeze",
   ensureParentTag: true,
-  dependencyWindowBeforeMs: 10_000,
-  dependencyWindowAfterMs: 10_000,
+  dependencyWindowBeforeMs: 15_000,
+  dependencyWindowAfterMs: 15_000,
 };
 
 export function createMarkers(partial?: Partial<MarkersConfig>): Markers {
@@ -66,8 +66,8 @@ export function createMarkers(partial?: Partial<MarkersConfig>): Markers {
     tagFreeze: cfg.tagFreeze,
     ensureParentTag: cfg.ensureParentTag !== false,
     appendSeparator: APPEND_SEPARATOR,
-    dependencyWindowBeforeMs: cfg.dependencyWindowBeforeMs ?? 10_000,
-    dependencyWindowAfterMs: cfg.dependencyWindowAfterMs ?? 10_000,
+    dependencyWindowBeforeMs: cfg.dependencyWindowBeforeMs ?? 15_000,
+    dependencyWindowAfterMs: cfg.dependencyWindowAfterMs ?? 15_000,
     lifecycleTags,
     nestedTags: [...lifecycleTags, cfg.tagFreeze],
     lifecycleTagSet: new Set(lifecycleTags),

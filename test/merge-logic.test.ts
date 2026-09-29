@@ -229,9 +229,9 @@ describe("fragmentPayload / chooseMergeMain", () => {
 describe("planFragmentActions candidate counts", () => {
   const t0 = "2026-09-04T10:11:12+0800";
   const tPlus5 = "2026-09-04T10:11:17+0800";
-  const tPlus11 = "2026-09-04T10:11:23+0800";
+  const tPlus16 = "2026-09-04T10:11:28+0800";
   const tMinus4 = "2026-09-04T10:11:08+0800";
-  const tMinus11 = "2026-09-04T10:11:01+0800";
+  const tMinus16 = "2026-09-04T10:10:56+0800";
 
   it("count 0 → waiting_deps", () => {
     const fragment = task({
@@ -243,7 +243,7 @@ describe("planFragmentActions candidate counts", () => {
       id: "late",
       title: "chat",
       content: "body",
-      createdTime: tPlus11,
+      createdTime: tPlus16,
     });
     const { merges, nots, skipped } = planFragmentActions(
       [fragment, outside],
@@ -257,7 +257,7 @@ describe("planFragmentActions candidate counts", () => {
       id: "early",
       title: "chat",
       content: "body",
-      createdTime: tMinus11,
+      createdTime: tMinus16,
     });
     expect(planFragmentActions([fragment, tooEarly], m).skipped).toEqual([
       { fragment, reason: "waiting_deps" },

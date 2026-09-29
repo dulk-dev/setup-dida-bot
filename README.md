@@ -192,7 +192,7 @@ npm run ui        # http://127.0.0.1:8788/ 可改 interval / enabled
 | `webhookUrl` / `webhookSecret` | `""` | 本机密钥 |
 | `webhookAuthStyle` | `both` | `bearer` \| `header` \| `both` |
 | `maxMergeOrNot` / `maxClaim` / `maxHydrate` | `10` / `8` / `10` | 每轮上限 |
-| `dependencyWindowBeforeMs` / `AfterMs` | `10000` | 依赖时间窗 |
+| `dependencyWindowBeforeMs` / `AfterMs` | `15000` | 依赖时间窗（默认前后各 15 秒） |
 | `uiHost` / `uiPort` | `127.0.0.1` / `8788` | 状态页只绑本机 |
 | `dataDir` | `data` | 相对项目根 |
 

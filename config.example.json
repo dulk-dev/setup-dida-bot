@@ -17,8 +17,8 @@
   "maxMergeOrNot": 10,
   "maxClaim": 8,
   "maxHydrate": 10,
-  "dependencyWindowBeforeMs": 10000,
-  "dependencyWindowAfterMs": 10000,
+  "dependencyWindowBeforeMs": 15000,
+  "dependencyWindowAfterMs": 15000,
   "uiHost": "127.0.0.1",
   "uiPort": 8788,
   "dataDir": "data"
