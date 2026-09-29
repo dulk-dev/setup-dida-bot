@@ -4,7 +4,7 @@
 
 ## 1. 创建例程并填本地配置
 
-1. 在 Grok Bot 里使用 webhook 例程「setup-dida-bot webhook」（新建或沿用已改名的这一条）。
+1. 在 Grok Bot 里新建（或使用）webhook 例程，建议名称「setup-dida-bot webhook」。
 2. 复制例程给出的 URL 和 secret。
 3. 只贴进克隆目录下的本地 `config.json`（从 `config.example.json` 复制而来）：
 
