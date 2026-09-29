@@ -5,7 +5,7 @@ import { readStatus } from "./store.ts";
 import { startUiServer } from "./ui-server.ts";
 
 function usage(): never {
-  console.log(`setup-dida-bot — local Dida bot-merge for Grok Bot
+  console.log(`setup-dida-bot — merge WeChat-split Dida tasks and wake a Grok Bot
 
 Usage:
   npm run once     # run merge+claim once

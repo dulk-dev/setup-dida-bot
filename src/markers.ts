@@ -1,9 +1,7 @@
 /**
- * Configurable markers so local setup-dida-bot does not collide with the
- * production Cloudflare Worker (which uses @bot / todo / doing / done).
- *
- * Defaults are the local-safe set (@botx / x-todo / …). Flip via config.json
- * when you intentionally want production markers.
+ * Marker names for merge, claim, and freeze.
+ * Defaults: @bot / @not / bot / todo / doing / done / freeze.
+ * Override the whole set together via config.json.
  */
 
 export interface MarkersConfig {
@@ -41,14 +39,14 @@ export interface Markers {
 export const APPEND_SEPARATOR = "\n\n---\n\n";
 
 export const DEFAULT_MARKERS_CONFIG: MarkersConfig = {
-  botMarker: "@botx",
-  notMarker: "@notx",
+  botMarker: "@bot",
+  notMarker: "@not",
   wechatCaptureTag: "微信采集",
-  tagParent: "x-bot",
-  tagTodo: "x-todo",
-  tagDoing: "x-doing",
-  tagDone: "x-done",
-  tagFreeze: "x-freeze",
+  tagParent: "bot",
+  tagTodo: "todo",
+  tagDoing: "doing",
+  tagDone: "done",
+  tagFreeze: "freeze",
   ensureParentTag: true,
   dependencyWindowBeforeMs: 10_000,
   dependencyWindowAfterMs: 10_000,

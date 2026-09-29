@@ -66,7 +66,7 @@ function pageHtml(config: AppConfig): string {
 </head>
 <body>
   <h1>setup-dida-bot</h1>
-  <p class="muted">本地 Grok Bot 用 Dida 合并轮询（默认标记 <code>@botx</code> / <code>x-todo</code>，不与线上 Worker 冲突）</p>
+  <p class="muted">本地 Grok Bot 用 Dida 合并轮询（默认标记 <code>@bot</code> / <code>todo</code> / <code>doing</code> / <code>done</code>）</p>
 
   <div class="card">
     <div class="row">
@@ -84,7 +84,7 @@ function pageHtml(config: AppConfig): string {
         <span class="pill">${markers.tagFreeze}</span>
       </div>
     </div>
-    <p class="muted" style="margin-top:0.8rem">标记只读 — 改 config.json 后重启。切到生产请把 botMarker/@bot、lifecycle 改为 todo/doing/done（并停掉本 daemon）。</p>
+    <p class="muted" style="margin-top:0.8rem">标记只读。要改标记，编辑 config.json 后重启。</p>
   </div>
 
   <div class="card">

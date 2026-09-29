@@ -420,7 +420,7 @@ async function resolveTaskTags(
 }
 
 /**
- * Webhook first, then x-todo → x-doing only if the webhook succeeds.
+ * Webhook first, then todo → doing only if the webhook succeeds.
  */
 export async function claimTodoTasks(
   api: DidaApi,

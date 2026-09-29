@@ -16,11 +16,11 @@ export interface PendingBotItem {
   title: string;
   reason: PendingReason;
   tags?: string[];
-  /** After successful claim path: lifecycle leaf (e.g. x-doing). */
+  /** After successful claim path: lifecycle leaf (e.g. doing). */
   lifecycle?: string;
 }
 
-/** Unified wake — aligns with Worker but source is setup-dida-bot. */
+/** Wake payload. source is always setup-dida-bot. */
 export interface WorkWebhookPayload {
   event: "dida_bot_work";
   source: "setup-dida-bot";

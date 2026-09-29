@@ -85,8 +85,7 @@ export function hasNotMarker(
 }
 
 /**
- * Belt and suspenders: never auto-merge already-`@notx` or already-`x-freeze`
- * fragments.
+ * Never auto-merge fragments that already carry notMarker or tagFreeze.
  */
 export function shouldSkipAutoMerge(
   task: {

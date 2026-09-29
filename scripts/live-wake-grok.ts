@@ -1,6 +1,6 @@
 /**
  * Live wake against configured Grok Bot webhook (config.json).
- * Creates [setup-dida-bot-test] pair, runs once, keeps main task for bot to mark x-done.
+ * Creates [setup-dida-bot-test] pair, runs once, keeps main task for bot to mark done.
  * Does NOT delete the merged main on success (so bot can act); deletes fragment if still present.
  * Set CLEANUP=1 to delete main after verifying claim.
  */
@@ -33,7 +33,7 @@ async function main() {
 
   const context = await api.createTask({
     title: `${PREFIX} grok-wake context ${stamp}`,
-    content: `live wake context for setup-dida-bot-test ${stamp}. Bot may mark x-done after reading.`,
+    content: `live wake context for setup-dida-bot-test ${stamp}. Bot may mark done after reading.`,
     tags: [m.wechatCaptureTag],
   });
   created.push({ projectId: context.projectId, id: context.id });

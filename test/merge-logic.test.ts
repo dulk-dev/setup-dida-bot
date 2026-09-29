@@ -21,7 +21,7 @@ import {
   type MergeTask,
 } from "../src/merge-logic.ts";
 
-const m = createMarkers(); // @botx / @notx / x-freeze defaults
+const m = createMarkers();
 const BOT = m.botMarker;
 const NOT = m.notMarker;
 const FREEZE = m.tagFreeze;
@@ -113,8 +113,8 @@ describe("isInDependencyWindow [T-10s, T+10s]", () => {
   });
 });
 
-describe("isBotFragment with @botx", () => {
-  it("requires @botx in the title and empty/null content", () => {
+describe("isBotFragment with @bot", () => {
+  it("requires @bot in the title and empty/null content", () => {
     expect(
       isBotFragment({ title: "forwarded wechat", content: "hello" }, m),
     ).toBe(false);
@@ -126,13 +126,7 @@ describe("isBotFragment with @botx", () => {
     ).toBe(true);
   });
 
-  it("does not treat production @bot as a fragment when using @botx markers", () => {
-    expect(isBotFragment({ title: "@bot summarize", content: "" }, m)).toBe(
-      false,
-    );
-  });
-
-  it("never treats @notx titles as fragments", () => {
+  it("never treats @not titles as fragments", () => {
     expect(isBotFragment({ title: `${NOT} summarize`, content: "" }, m)).toBe(
       false,
     );
@@ -144,7 +138,7 @@ describe("isBotFragment with @botx", () => {
     ).toBe(false);
   });
 
-  it("still treats freeze-tagged empty @botx as a fragment", () => {
+  it("still treats freeze-tagged empty @bot as a fragment", () => {
     expect(
       isBotFragment(
         { title: `${BOT} x`, content: "", tags: [FREEZE] },
@@ -155,7 +149,7 @@ describe("isBotFragment with @botx", () => {
 });
 
 describe("shouldSkipAutoMerge", () => {
-  it("skips @notx titles and x-freeze-tagged fragments", () => {
+  it("skips @not titles and freeze-tagged fragments", () => {
     expect(shouldSkipAutoMerge({ title: `${NOT} leftover` }, m)).toBe(true);
     expect(
       shouldSkipAutoMerge({ title: `${BOT} x`, tags: [FREEZE] }, m),
@@ -167,7 +161,7 @@ describe("shouldSkipAutoMerge", () => {
 });
 
 describe("rewriteBotTitleToNot", () => {
-  it("replaces @botx with @notx", () => {
+  it("replaces @bot with @not", () => {
     expect(rewriteBotTitleToNot(`${BOT} 总结这段`, m)).toBe(`${NOT} 总结这段`);
     expect(rewriteBotTitleToNot(`请 ${BOT} 处理`, m)).toBe(`请 ${NOT} 处理`);
     expect(rewriteBotTitleToNot(`${BOT} a ${BOT} b`, m)).toBe(
@@ -302,7 +296,7 @@ describe("planFragmentActions candidate counts", () => {
     );
   });
 
-  it("count 2+ → @notx rewrite", () => {
+  it("count 2+ → @not rewrite", () => {
     const fragment = task({
       id: "frag",
       title: `${BOT} x`,
@@ -329,7 +323,7 @@ describe("planFragmentActions candidate counts", () => {
     expect(nots.map((n) => n.id)).toEqual(["frag"]);
   });
 
-  it("skips auto-merge when fragment already has x-freeze", () => {
+  it("skips auto-merge when fragment already has freeze", () => {
     const fragment = task({
       id: "frag",
       title: `${BOT} x`,
@@ -387,14 +381,15 @@ describe("shanghaiCalendarDate / daysUntil", () => {
   });
 });
 
-describe("local markers defaults", () => {
-  it("uses @botx / @notx not production @bot / @not", () => {
-    expect(m.botMarker).toBe("@botx");
-    expect(m.notMarker).toBe("@notx");
-    expect(m.tagTodo).toBe("x-todo");
-    expect(m.tagDoing).toBe("x-doing");
-    expect(m.tagDone).toBe("x-done");
-    expect(m.tagFreeze).toBe("x-freeze");
-    expect(m.tagParent).toBe("x-bot");
+describe("default markers", () => {
+  it("uses @bot / todo / doing / done", () => {
+    expect(m.botMarker).toBe("@bot");
+    expect(m.notMarker).toBe("@not");
+    expect(m.tagTodo).toBe("todo");
+    expect(m.tagDoing).toBe("doing");
+    expect(m.tagDone).toBe("done");
+    expect(m.tagFreeze).toBe("freeze");
+    expect(m.tagParent).toBe("bot");
+    expect(m.wechatCaptureTag).toBe("微信采集");
   });
 });
