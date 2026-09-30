@@ -9,6 +9,7 @@
  * Titles use prefix [setup-dida-bot-test] for easy identification.
  */
 import { createServer, type IncomingMessage } from "node:http";
+import { randomBytes } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { loadConfig, PROJECT_ROOT } from "../src/config.ts";
@@ -35,7 +36,7 @@ async function startMockWebhook(): Promise<{
   payloads: WorkWebhookPayload[];
   close: () => Promise<void>;
 }> {
-  const secret = "selftest-secret";
+  const secret = `selftest-${randomBytes(16).toString("hex")}`;
   const payloads: WorkWebhookPayload[] = [];
   const server = createServer(async (req, res) => {
     if (req.method === "POST") {

@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "description": "Merge WeChat-split Dida tasks via dida CLI and wake a Grok Bot webhook",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "once": "tsx src/cli.ts once",
