@@ -96,6 +96,14 @@ npm run selftest  # 需已 login；建测试任务打 mock webhook 后清理
 
 `daemon` 是**一个**常驻进程（醒 → 跑一轮 → 睡），不是 cron 每次另起脚本。停进程或机器重启后轮询停止。
 
+### 开机自启与保活
+
+Grok Bot 云端电脑重启或被换成新机器后，这个进程不会自己回来。那里通常没有 systemd / crontab。
+
+在仓库根执行 `bash scripts/ensure-daemon.sh`（或 `npm run ensure`）。已在跑会打印 `already_running pid=…` 并退出；否则后台拉起并打印 `started pid=…`。重复执行是安全的。
+
+可选：另建一条 Grok Bot 例程，每天跑 1～2 次这条脚本作补漏；健康时保持安静。细节见 [docs/autostart.md](docs/autostart.md)。
+
 ## 配置参考
 
 读项目根 `config.json`，或环境变量 `SETUP_DIDA_BOT_CONFIG`。只提交 [`config.example.json`](config.example.json)。
@@ -118,7 +126,7 @@ npm run selftest  # 需已 login；建测试任务打 mock webhook 后清理
 
 状态页只能改 `intervalSeconds` 与 `enabled`。改标记或 webhook 后须重启 daemon。
 
-运行时文件（勿提交）：`data/merge.lock`、`data/processed.json`、`data/status.json`。
+运行时文件（勿提交）：`data/merge.lock`、`data/processed.json`、`data/status.json`、`data/daemon.pid`、`data/daemon.log`。
 
 ## 文档与安全
 
@@ -126,6 +134,7 @@ npm run selftest  # 需已 login；建测试任务打 mock webhook 后清理
 |------|------|
 | [docs/usage.md](docs/usage.md) | 日常用法、反例、标签语义 |
 | [docs/webhook.md](docs/webhook.md) | 认证头、载荷、例程提示词 |
+| [docs/autostart.md](docs/autostart.md) | 云端电脑上的保活与补跑 |
 | [SECURITY.md](SECURITY.md) | 勿提交密钥、登录态与 status |
 
 ## 故障排查

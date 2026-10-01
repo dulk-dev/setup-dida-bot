@@ -8,6 +8,7 @@
   "scripts": {
     "once": "tsx src/cli.ts once",
     "daemon": "tsx src/cli.ts daemon",
+    "ensure": "bash scripts/ensure-daemon.sh",
     "status": "tsx src/cli.ts status",
     "ui": "tsx src/cli.ts ui",
     "test": "vitest run",
