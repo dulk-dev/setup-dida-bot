@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Thin wrapper: upload one file as a task attachment (never edits content).
+# Usage: dida-attach <projectId> <taskId> <file> [--json] [--secrets PATH]
+set -euo pipefail
+DIR="$(cd "$(dirname "$0")" && pwd)"
+if [[ $# -lt 3 ]]; then
+  echo "Usage: dida-attach <projectId> <taskId> <file> [--json] [--secrets PATH]" >&2
+  exit 2
+fi
+p=$1; t=$2; f=$3; shift 3
+exec python3 "$DIR/upload_task_attachment.py" --project-id "$p" --task-id "$t" --file "$f" "$@"

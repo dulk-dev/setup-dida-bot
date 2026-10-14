@@ -3,7 +3,8 @@
 # 退出码：0 already_running | 0 started | 1 failed
 #
 # node / npm 必须在 PATH 上。不要在本脚本里写某台机器的 Node 绝对路径。
-# 若调用处 PATH 更窄，可在 unit / cron 里自行前置 PATH（可选，不是本脚本的必需配置）。
+# 可选：export SETUP_DIDA_NODE_BIN=/path/to/node/bin 会 prepend 到 PATH。
+# 若调用处 PATH 更窄，也可在 unit / cron / 例程里自行前置 PATH。
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -11,6 +12,13 @@ DATA="$ROOT/data"
 PIDFILE="$DATA/daemon.pid"
 LOG="$DATA/daemon.log"
 cd "$ROOT"
+
+if [[ -n "${SETUP_DIDA_NODE_BIN:-}" ]]; then
+  export PATH="${SETUP_DIDA_NODE_BIN}:${PATH}"
+fi
+if [[ -d "${HOME}/.local/bin" ]]; then
+  export PATH="${HOME}/.local/bin:${PATH}"
+fi
 
 mkdir -p "$DATA"
 
@@ -29,6 +37,11 @@ PID="$(read_pid)"
 if is_alive "$PID"; then
   echo "already_running pid=$PID"
   exit 0
+fi
+
+if ! command -v node >/dev/null 2>&1; then
+  echo "node not found on PATH; set SETUP_DIDA_NODE_BIN or fix PATH" >&2
+  exit 1
 fi
 
 if [[ ! -d node_modules ]] || [[ ! -x node_modules/.bin/tsx ]]; then

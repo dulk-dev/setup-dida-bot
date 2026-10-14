@@ -94,15 +94,33 @@ npm run ui        # http://127.0.0.1:8788/
 npm run selftest  # 需已 login；建测试任务打 mock webhook 后清理
 ```
 
-`daemon` 是**一个**常驻进程（醒 → 跑一轮 → 睡），不是 cron 每次另起脚本。停进程或机器重启后轮询停止。
+`daemon` 是**一个**常驻进程（醒 → 跑一轮 → 睡），不是 cron 每次另起脚本。**进程停了轮询就停**（崩溃、登出、机器重启都会停）；建议用定时任务反复检查并拉起，而不是指望它永远活着。
 
-### 开机自启与保活
+### 保活：`scripts/ensure-daemon.sh`
 
-Grok Bot 云端电脑重启或被换成新机器后，这个进程不会自己回来。那里通常没有 systemd / crontab。
+可重复执行的检查脚本：已在跑则退出；否则在项目根启动 `tsx src/cli.ts daemon`。
 
-在仓库根执行 `bash scripts/ensure-daemon.sh`（或 `npm run ensure`）。已在跑会打印 `already_running pid=…` 并退出；否则后台拉起并打印 `started pid=…`。重复执行是安全的。
+```bash
+# 可选：把含 node/npm 的目录 prepend 到 PATH（勿在脚本里写死版本路径）
+export SETUP_DIDA_NODE_BIN="$HOME/.local/node-current/bin"
+./scripts/ensure-daemon.sh
+```
 
-可选：另建一条 Grok Bot 例程，每天跑 1～2 次这条脚本作补漏；健康时保持安静。细节见 [docs/autostart.md](docs/autostart.md)。
+| 退出码 | stdout 前缀 | 含义 |
+|--------|-------------|------|
+| 0 | `already_running` | pidfile 对应进程仍活着 |
+| 0 | `started` | 刚拉起（或从 stale pidfile 恢复） |
+| 1 | `failed…` / 其它 stderr | 缺 `config.json`、找不到 node、启动超时等 |
+
+例如每天三次（北京时间约 7:18 / 12:18 / 18:18；按本机时区改 cron）：
+
+```cron
+18 7,12,18 * * * cd /path/to/setup-dida-bot && ./scripts/ensure-daemon.sh >>data/ensure-daemon.log 2>&1
+```
+
+Grok Bot 云端例程也可按同样节奏调用该脚本做检查。
+
+云端电脑场景（无 systemd / crontab、机器可能被换）见 [docs/autostart.md](docs/autostart.md)；也可用 `npm run ensure`。
 
 ## 配置参考
 
@@ -135,6 +153,7 @@ Grok Bot 云端电脑重启或被换成新机器后，这个进程不会自己�
 | [docs/usage.md](docs/usage.md) | 日常用法、反例、标签语义 |
 | [docs/webhook.md](docs/webhook.md) | 认证头、载荷、例程提示词 |
 | [docs/autostart.md](docs/autostart.md) | 云端电脑上的保活与补跑 |
+| [skills/dida-attach-file](skills/dida-attach-file/SKILL.md) | Bot 可选技能：给任务挂图片/文件（凭据见 [usage · 附件技能](docs/usage.md#附件技能skills)） |
 | [SECURITY.md](SECURITY.md) | 勿提交密钥、登录态与 status |
 
 ## 故障排查
