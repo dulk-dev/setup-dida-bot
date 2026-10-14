@@ -149,7 +149,7 @@ HTTP 2xx 之后，daemon 才把这些任务的叶子写成 `lifecycle`（默认 
 - 仅有可执行下一步时才在评论里写个人建议。
 - 标题难辨认可改短（约 30 字内）；旧标题含链接/可追溯来源则追加进正文或评论，群聊「聊天记录」类套话可丢；不冲掉正文原文段。
 - 要「放到某清单」时直接 `move_task` 移动原任务，不另建新任务；只有指令明确要拆分才新建。
-- 挂图片/文件附件按 [skills/dida-attach-file](../skills/dida-attach-file/SKILL.md)：网页 API 只上传，正文用 MCP `update_task` 写 `![image](附件id/文件名)`，并原样带回 `startDate`/`dueDate`/`isAllDay`/`timeZone`（子任务带 `parentId`）。不要用会改正文的上传写法，它会清掉日期、把图片写成 `![file]`。
+- 挂图片/文件附件按 [skills/dida-attach-file](../skills/dida-attach-file/SKILL.md)：网页 API 只上传，正文用 MCP `update_task`：图片写 `![image](附件id/文件名)`，非图片写 `![file](...)`；并原样带回 `startDate`/`dueDate`/`isAllDay`/`timeZone`（子任务带 `parentId`）。不要用会改正文的上传写法，它会清掉日期，还会把图片误写成 `![file]`。
 - 动手前再读一次：已 `done` 或已被另一轮处理过的跳过，不重复做、不重复通知。
 - 收尾用 `get_task_by_id` 重读，核对清单、日期、标签、图片后才通知；pending 为空或全被跳过时不通知。
 - 指令未明确要求写代码或改仓库时，不要另行拉起编码代理 / 同事 bot 开工。
@@ -166,7 +166,7 @@ HTTP 2xx 之后，daemon 才把这些任务的叶子写成 `lifecycle`（默认 
    - 执行标题和正文里的指令（碎片标记是 @bot）。merges 只说明碎片并进了哪条上下文；只改 pending.taskId，不要改 fragmentId。
    - 要「放到某清单」时：直接 move_task 移动原任务，不另建新任务；只有指令明确要拆成多条时才新建。
    - 设置日期时按指令写 startDate、dueDate、isAllDay、timeZone。
-   - 挂附件按 skills/ 下的附件技能做（上传不插正文，正文用 update_task 写 ![image](附件id/文件名)，原样带回日期字段）。
+   - 挂附件按 skills/ 下的附件技能做（上传不插正文，正文用 update_task：图片写 ![image](附件id/文件名)，非图片写 ![file](...)，原样带回日期字段）。
    - 保留转发原文/聊天上下文，禁止整段替换 content；结论用 \n\n---\n\n 追加文尾或写评论；评论里不写执行过程。
    - 你写的每条评论开头加「🤖 」前缀。
    - 仅当有可执行下一步时才在评论里写个人建议。

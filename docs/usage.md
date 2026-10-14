@@ -113,7 +113,7 @@ cd /path/to/setup-dida-bot && ./scripts/ensure-daemon.sh
 
 `skills/` 放给 Bot 用的可选技能（`SKILL.md` + 脚本），daemon 本身不调用。目前有：
 
-- [`skills/dida-attach-file`](../skills/dida-attach-file/SKILL.md)：把本地图片/文件挂到任务上。官方 Open API / MCP 没有上传接口，脚本走网页 API **只上传**；正文由 MCP `update_task` 写 `![image](附件id/文件名)`，并原样带回 `startDate`/`dueDate`/`isAllDay`/`timeZone`（子任务带 `parentId`）。
+- [`skills/dida-attach-file`](../skills/dida-attach-file/SKILL.md)：把本地图片/文件挂到任务上。官方 Open API / MCP 没有上传接口，脚本走网页 API **只上传**；正文由 MCP `update_task` 写：图片用 `![image](附件id/文件名)`，Word/Excel/PDF/txt 等非图片用 `![file](...)`；并原样带回 `startDate`/`dueDate`/`isAllDay`/`timeZone`（子任务带 `parentId`）。
 
 凭据（网页登录 cookie，不是 OAuth token）：
 
