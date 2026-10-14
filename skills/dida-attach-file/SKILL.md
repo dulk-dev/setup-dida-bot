@@ -29,7 +29,7 @@ skills/dida-attach-file/scripts/dida-attach <projectId> <taskId> <file> [--json]
 1. 确认 `projectId`、`taskId`、文件存在；每个文件取唯一文件名。
 2. 逐个上传（脚本只上传，不改正文），记下每个 `attachment_id` 与 `fileName`。
 3. 网络错误（SSL EOF 等）对该文件重试一次；核对 `attachment_count` 等于预期。
-4. 先用 MCP `get_task_in_project` / `get_task_by_id` 读任务，再**一次** `update_task`：在原正文后追加，每个文件一行 `![image](<attachmentId>/<fileName>)`（用 `![image]`，不用 `![file]`），并原样带回 `startDate`、`dueDate`、`isAllDay`、`timeZone`；子任务带回 `parentId`。
+4. 先用 MCP `get_task_in_project` / `get_task_by_id` 读任务，再**一次** `update_task`：在原正文后追加，每个附件一行。真正的图片（png/jpg/jpeg/webp/gif）用 `![image](<attachmentId>/<fileName>)`；Word、Excel、PDF、txt、zip 等非图片用 `![file](<attachmentId>/<fileName>)`。图片不要写成 `![file]`（只会显示链接、不预览）。同一调用里原样带回 `startDate`、`dueDate`、`isAllDay`、`timeZone`；子任务带回 `parentId`。
 5. `get_task_by_id` 重读：正文每行都在、日期未变；请用户刷新确认图片显示。
 6. 某张图显示为链接文本：换新文件名重传，替换那一行的 id，仍带回日期。
 7. 鉴权失败：提示用户重新登录网页版并更新 cookie；不要猜测或打印凭据。
