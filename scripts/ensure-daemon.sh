@@ -1,13 +1,10 @@
 #!/usr/bin/env bash
-# Ensure setup-dida-bot daemon is running. Safe to run repeatedly.
+# 确保 setup-dida-bot daemon 在跑。可重复执行。
+# 退出码：0 already_running | 0 started | 1 failed
 #
-# Exit codes / stdout:
-#   0  already_running  — pidfile points at a live process
-#   0  started          — daemon was launched (or pidfile recovered)
-#   1  failed           — missing config, start timed out, etc.
-#
-# Node on PATH: optionally set SETUP_DIDA_NODE_BIN to a directory containing
-# `node`/`npm` (prepended to PATH). Do not hardcode a private Node install path.
+# node / npm 必须在 PATH 上。不要在本脚本里写某台机器的 Node 绝对路径。
+# 可选：export SETUP_DIDA_NODE_BIN=/path/to/node/bin 会 prepend 到 PATH。
+# 若调用处 PATH 更窄，也可在 unit / cron / 例程里自行前置 PATH。
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -19,7 +16,6 @@ cd "$ROOT"
 if [[ -n "${SETUP_DIDA_NODE_BIN:-}" ]]; then
   export PATH="${SETUP_DIDA_NODE_BIN}:${PATH}"
 fi
-# Also honour a conventional user-local bin if present (no version pin).
 if [[ -d "${HOME}/.local/bin" ]]; then
   export PATH="${HOME}/.local/bin:${PATH}"
 fi
@@ -44,7 +40,7 @@ if is_alive "$PID"; then
 fi
 
 if ! command -v node >/dev/null 2>&1; then
-  echo "node not found on PATH; set SETUP_DIDA_NODE_BIN to a directory with node/npm" >&2
+  echo "node not found on PATH; set SETUP_DIDA_NODE_BIN or fix PATH" >&2
   exit 1
 fi
 
@@ -63,7 +59,7 @@ rm -f "$PIDFILE"
 
 nohup ./node_modules/.bin/tsx src/cli.ts daemon >>"$LOG" 2>&1 &
 NEW_PID=$!
-# cli should rewrite pidfile; wait briefly
+# 进程自己不写 pidfile；短暂确认存活后由本脚本记下。
 for _ in 1 2 3 4 5 6 7 8 9 10; do
   sleep 0.5
   PID="$(read_pid)"

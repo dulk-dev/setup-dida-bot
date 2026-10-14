@@ -120,6 +120,8 @@ export SETUP_DIDA_NODE_BIN="$HOME/.local/node-current/bin"
 
 Grok Bot 云端例程也可按同样节奏调用该脚本做检查。
 
+云端电脑场景（无 systemd / crontab、机器可能被换）见 [docs/autostart.md](docs/autostart.md)；也可用 `npm run ensure`。
+
 ## 配置参考
 
 读项目根 `config.json`，或环境变量 `SETUP_DIDA_BOT_CONFIG`。只提交 [`config.example.json`](config.example.json)。
@@ -142,7 +144,7 @@ Grok Bot 云端例程也可按同样节奏调用该脚本做检查。
 
 状态页只能改 `intervalSeconds` 与 `enabled`。改标记或 webhook 后须重启 daemon。
 
-运行时文件（勿提交）：`data/merge.lock`、`data/processed.json`、`data/status.json`。
+运行时文件（勿提交）：`data/merge.lock`、`data/processed.json`、`data/status.json`、`data/daemon.pid`、`data/daemon.log`。
 
 ## 文档与安全
 
@@ -150,6 +152,7 @@ Grok Bot 云端例程也可按同样节奏调用该脚本做检查。
 |------|------|
 | [docs/usage.md](docs/usage.md) | 日常用法、反例、标签语义 |
 | [docs/webhook.md](docs/webhook.md) | 认证头、载荷、例程提示词 |
+| [docs/autostart.md](docs/autostart.md) | 云端电脑上的保活与补跑 |
 | [skills/dida-attach-file](skills/dida-attach-file/SKILL.md) | Bot 可选技能：给任务挂图片/文件（凭据见 [usage · 附件技能](docs/usage.md#附件技能skills)） |
 | [SECURITY.md](SECURITY.md) | 勿提交密钥、登录态与 status |
 
