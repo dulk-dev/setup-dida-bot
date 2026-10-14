@@ -94,7 +94,31 @@ npm run ui        # http://127.0.0.1:8788/
 npm run selftest  # 需已 login；建测试任务打 mock webhook 后清理
 ```
 
-`daemon` 是**一个**常驻进程（醒 → 跑一轮 → 睡），不是 cron 每次另起脚本。停进程或机器重启后轮询停止。
+`daemon` 是**一个**常驻进程（醒 → 跑一轮 → 睡），不是 cron 每次另起脚本。**进程停了轮询就停**（崩溃、登出、机器重启都会停）；建议用定时任务反复检查并拉起，而不是指望它永远活着。
+
+### 保活：`scripts/ensure-daemon.sh`
+
+可重复执行的检查脚本：已在跑则退出；否则在项目根启动 `tsx src/cli.ts daemon`。
+
+```bash
+# 可选：把含 node/npm 的目录 prepend 到 PATH（勿在脚本里写死版本路径）
+export SETUP_DIDA_NODE_BIN="$HOME/.local/node-current/bin"
+./scripts/ensure-daemon.sh
+```
+
+| 退出码 | stdout 前缀 | 含义 |
+|--------|-------------|------|
+| 0 | `already_running` | pidfile 对应进程仍活着 |
+| 0 | `started` | 刚拉起（或从 stale pidfile 恢复） |
+| 1 | `failed…` / 其它 stderr | 缺 `config.json`、找不到 node、启动超时等 |
+
+例如每天三次（北京时间约 7:18 / 12:18 / 18:18；按本机时区改 cron）：
+
+```cron
+18 7,12,18 * * * cd /path/to/setup-dida-bot && ./scripts/ensure-daemon.sh >>data/ensure-daemon.log 2>&1
+```
+
+Grok Bot 云端例程也可按同样节奏调用该脚本做检查。
 
 ## 配置参考
 
