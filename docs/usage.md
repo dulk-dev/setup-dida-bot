@@ -99,15 +99,7 @@ dida tag create --name freeze --label freeze --parent bot --json
 
 ## Daemon 保活
 
-daemon 停了轮询就停。仓库提供 [`scripts/ensure-daemon.sh`](../scripts/ensure-daemon.sh)：已在跑则打印 `already_running` 并以 0 退出；否则启动并以 `started` / 失败码 1 回报。Node 目录用环境变量 `SETUP_DIDA_NODE_BIN` 注入，不要写死本机版本路径。
-
-建议用 cron / 例程**每天多次**检查（例如每天三次，约北京时间 7:18、12:18、18:18）：
-
-```bash
-cd /path/to/setup-dida-bot && ./scripts/ensure-daemon.sh
-```
-
-细节与退出码表见 [README · 保活](../README.md#保活scriptsensure-daemonsh)。
+daemon 停了轮询就停。检查与拉起用 [`scripts/ensure-daemon.sh`](../scripts/ensure-daemon.sh)（或 `npm run ensure`）。退出码、可选 `SETUP_DIDA_NODE_BIN`、定时补跑见 [docs/autostart.md](autostart.md)。
 
 ## 附件技能（skills/）
 

@@ -1,38 +1,42 @@
 # 开机自启与保活
 
-面向 **Grok Bot 云端电脑**。`npm run daemon` 是一个常驻进程（醒 → 跑一轮 → 睡）。机器重启或被换成另一台之后，进程消失，轮询停止。
+`npm run daemon` 是一个常驻进程（醒 → 跑一轮 → 睡）。进程停了（崩溃、登出、机器重启、云端电脑被换成另一台）轮询就停。
 
-这类环境通常**没有** systemd，也**没有** crontab，开机不会自己把进程拉回来。
+Grok Bot 云端电脑通常**没有** systemd / crontab，开机不会自己把进程拉回来，需要你或例程去拉。
 
 ## 拉起
 
 在仓库根目录执行：
 
 ```bash
+# 可选：PATH 里没有 node/npm 时，把目录 prepend 进去（不要把绝对路径写进脚本）
+export SETUP_DIDA_NODE_BIN="$HOME/.local/node-current/bin"
+
 bash scripts/ensure-daemon.sh
 # 或
 npm run ensure
 ```
 
-| 情况 | 结果 |
-|------|------|
-| `data/daemon.pid` 里的进程还在 | 打印 `already_running pid=…`，退出 0 |
-| 没有 `node_modules` 或 `node_modules/.bin/tsx` | 先 `npm install` |
-| 没有 `config.json` | 打印 `missing config.json`，退出 1 |
-| 否则 | `nohup` 用仓库里的 `tsx` 跑 `src/cli.ts daemon`，打印 `started pid=…` |
+| 退出码 | stdout 前缀 | 含义 |
+|--------|-------------|------|
+| 0 | `already_running` | `data/daemon.pid` 对应进程还在 |
+| 0 | `started` | 这次刚拉起（或从 stale pidfile 恢复） |
+| 1 | （stderr） | 缺 `config.json`、找不到 node、启动超时等 |
 
-标准输出用来区分「已在跑」和「这次拉起」。日志追加到 `data/daemon.log`。脚本可以反复执行。
-
-`node` 和 `npm` 必须在 `PATH` 上。不要把某一台机器的 Node 绝对路径写进脚本；调用环境的 `PATH` 更窄时，在调用处自己前置即可。
+其它行为：缺 `node_modules` / `tsx` 时会先 `npm install`；日志追加到 `data/daemon.log`；可反复执行。
 
 `config.json` 只留在本机（从 `config.example.json` 复制）。不要把 webhook URL 或 secret 写进仓库。
 
-## 可选：每天补跑
+## 定时补跑
 
-云端电脑换过或重启后，在你执行上面的脚本之前，轮询是空的。可以在 Grok Bot 里另建一条例程，每天跑 **1～2 次** `scripts/ensure-daemon.sh`（或 `npm run ensure`）当作补漏。
+云端电脑换过或重启后，在你执行上面的脚本之前，轮询是空的。建议用 cron 或 Grok Bot 例程**每天多次**跑同一条命令作补漏，例如北京时间约 7:18 / 12:18 / 18:18：
 
-健康时标准输出是 `already_running pid=…`。例程据此保持安静，不要发通知。只有启动失败、进程起不来时才需要人看。
+```cron
+18 7,12,18 * * * cd /path/to/setup-dida-bot && ./scripts/ensure-daemon.sh >>data/ensure-daemon.log 2>&1
+```
 
-这只是补漏，不是唯一保活手段，也不能填上「机器刚换完、例程还没到点」的空档。例程在 Grok Bot 里自己建。不要把 webhook URL、secret 或例程 id 写进仓库或本文。
+健康时标准输出是 `already_running pid=…`：例程据此保持安静，不要发通知。只有启动失败、进程起不来时才需要人看。
 
-若仓库跑在你自己的 Linux 上且有 systemd，可以用 user unit 在登录时执行 `scripts/ensure-daemon.sh`；云端电脑通常没有，不必准备。
+这只是补漏，填不上「机器刚换完、例程还没到点」的空档。例程在 Grok Bot 里自己建；不要把 webhook URL、secret 或例程 id 写进仓库。
+
+若跑在自有 Linux 且有 systemd，可用 user unit 在登录时执行 `scripts/ensure-daemon.sh`；云端电脑通常没有，不必准备。
