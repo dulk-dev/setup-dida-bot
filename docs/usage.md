@@ -89,6 +89,28 @@ dida tag create --name freeze --label freeze --parent bot --json
 细则与可粘贴例程提示词见 [webhook.md](webhook.md)。硬规则：
 
 - 保留转发原文 / 聊天上下文，**禁止整段替换** `content`
-- 结论用 `\n\n---\n\n` 追加文尾，或写评论；过程写评论
+- 结论用 `\n\n---\n\n` 追加文尾，或写评论；不在评论里写执行过程
+- bot 写的每条评论开头加 `🤖 ` 前缀
+- 「放到某清单」直接 `move_task` 移动原任务，不另建新任务（指令明确要拆分才新建）
+- 挂附件走 [附件技能](#附件技能skills)，不要用会清空日期的写法
+- 动手前已 `done` 的跳过、不重复通知；收尾 `get_task_by_id` 重读核对后才通知
 - 叶子改为 `done`，保留 `微信采集`；不要勾选完成
 - 指令未明确要求写代码或改仓库时，不要另行拉起编码代理 / 同事 bot 开工
+
+## 附件技能（skills/）
+
+`skills/` 放给 Bot 用的可选技能（`SKILL.md` + 脚本），daemon 本身不调用。目前有：
+
+- [`skills/dida-attach-file`](../skills/dida-attach-file/SKILL.md)：把本地图片/文件挂到任务上。官方 Open API / MCP 没有上传接口，脚本走网页 API **只上传**；正文由 MCP `update_task` 写 `![image](附件id/文件名)`，并原样带回 `startDate`/`dueDate`/`isAllDay`/`timeZone`（子任务带 `parentId`）。
+
+凭据（网页登录 cookie，不是 OAuth token）：
+
+```bash
+export DIDA_COOKIE_T='<cookie t>'          # 必需
+export DIDA_CSRF='<cookie _csrf_token>'    # 可选
+# 或：export DIDA_SESSION_FILE=~/.config/dida/session.json  内容 {"t":"...","_csrf_token":"..."}，chmod 600
+# TickTick：export DIDA_API_BASE=https://api.ticktick.com
+skills/dida-attach-file/scripts/dida-attach <projectId> <taskId> ./photo.png --json
+```
+
+把 `skills/dida-attach-file` 装进 Bot 的技能目录（或在提示词里指向它）即可。cookie 等同账号登录态，切勿提交或贴进聊天。

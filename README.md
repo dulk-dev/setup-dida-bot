@@ -126,6 +126,7 @@ npm run selftest  # 需已 login；建测试任务打 mock webhook 后清理
 |------|------|
 | [docs/usage.md](docs/usage.md) | 日常用法、反例、标签语义 |
 | [docs/webhook.md](docs/webhook.md) | 认证头、载荷、例程提示词 |
+| [skills/dida-attach-file](skills/dida-attach-file/SKILL.md) | Bot 可选技能：给任务挂图片/文件（凭据见 [usage · 附件技能](docs/usage.md#附件技能skills)） |
 | [SECURITY.md](SECURITY.md) | 勿提交密钥、登录态与 status |
 
 ## 故障排查
